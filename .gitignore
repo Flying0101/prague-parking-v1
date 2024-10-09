@@ -1,0 +1,17 @@
+# Ignore Visual Studio temporary files, build results, and
+# personal settings files.
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# Rider (optional)
+.idea/
+
+# Other common ignores
+*.log
