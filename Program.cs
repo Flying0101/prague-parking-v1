@@ -2,8 +2,10 @@
 {
     internal class Program
     {
+        private static ParkingLot parkingLot = new ParkingLot();
         static void Main(string[] args)
         {
+
             Console.WriteLine("Welcome to Stephano and Ömers parking assignment.");
 
             bool running = true;
