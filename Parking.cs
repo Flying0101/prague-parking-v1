@@ -2,7 +2,7 @@
 {
     public class ParkingLot
     {
-
+        // makes this more type safe, add vehicle as type maybe?
         private string[] parkingSpots;
 
         // constructor
