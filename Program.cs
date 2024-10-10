@@ -54,10 +54,71 @@
                         }
                         break;
                     case "2":
+                        try
+                        {
+                            // Get the source spot from the user
+                            Console.Write("Enter the spot number of the vehicle to move: ");
+                            string fromStringSpot = Console.ReadLine()!;
+
+                            // Get the destination spot from the user
+                            Console.Write("Enter the destination spot number: ");
+                            string toStringSpot = Console.ReadLine()!;
+
+                            // Move the vehicle using the MoveVehicle method
+                            if (parkingLot.MoveVehicle(fromStringSpot, toStringSpot))
+                            {
+                                Console.WriteLine($"\nVehicle moved from spot {fromStringSpot} to spot {toStringSpot} successfully.\n");
+                            }
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            Console.WriteLine($"Error: {ex.Message}");
+                        }
+
                         break;
                     case "3":
+                        try
+                        {
+                            Console.Write("\nEnter the spot number of the vehicle to remove: ");
+                            string spotStringNumber = Console.ReadLine()!;
+
+                            // Remove the vehicle using the RemoveVehicle method
+                            if (parkingLot.RemoveVehicle(spotStringNumber))
+                            {
+                                Console.WriteLine($"\nVehicle removed from spot {spotStringNumber} successfully.\n");
+                            }
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            Console.WriteLine($"Error: {ex.Message}");
+                        }
+
+
                         break;
                     case "4":
+                        try
+                        {
+                            Console.WriteLine("\nLets start searching!");
+                            Console.WriteLine("Enter the registration number of the vehicle: ");
+                            string searchWord = Console.ReadLine()!;
+
+                            // Search for the vehicle using the FindVehicle method
+                            int foundSpot = parkingLot.FindVehicle(searchWord);
+
+                            if (foundSpot != -1)
+                            {
+                                Console.WriteLine($"\nVehicle {searchWord} found at spot {foundSpot}.\n");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"\nVehicle {searchWord} not found in the parking lot.\n");
+                            }
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            Console.WriteLine($"Error: {ex.Message}");
+                        }
+
                         break;
                     case "5":
                         running = false;
