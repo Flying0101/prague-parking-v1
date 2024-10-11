@@ -10,15 +10,8 @@
             parkingSpots = new string[100];
         }
 
-        public bool ParkVehicle(string registrationNumber, string vehicleType, string inputSpotString)
+        public bool ParkVehicle(string registrationNumber, string vehicleType)
         {
-            int spotNumber;
-            //validate spot number
-            if (!int.TryParse(inputSpotString, out spotNumber) || spotNumber < 1 || spotNumber > 100)
-            {
-                throw new ArgumentException("Invalid spot number. Enter a number between 1 and 100:");
-            }
-
             //validate registration and type of vehicle.
             if (registrationNumber.Length > 10 || registrationNumber.Length <= 0)
             {
@@ -31,95 +24,203 @@
                 throw new ArgumentException("Invalid vehicle type, only car or motorcycle.\n");
             }
 
-            // Adjust for 0-based index in the array
-            int index = spotNumber - 1;
-
-            // Check if the spot is already taken
-            if (parkingSpots[index] != null)
+            // Loop through parking spots to find a valid one
+            for (int i = 0; i < parkingSpots.Length; i++)
             {
-                return false; // Spot is taken
+                // Check for car parking
+                if (vehicleType == "car")
+                {
+                    if (parkingSpots[i] == null)
+                    {
+                        Console.WriteLine($"\nparked in spot {i + 1}");
+                        parkingSpots[i] = $"{vehicleType}:{registrationNumber}"; // Park the car in an empty spot
+                        return true;
+                    }
+                }
+                else if (vehicleType == "motorcycle")
+                {
+                    // Check if spot is empty or already has one motorcycle
+                    if (parkingSpots[i] == null)
+                    {
+                        Console.WriteLine($"parked in spot {i + 1}");
+                        parkingSpots[i] = $"{vehicleType}:{registrationNumber}";
+                        return true;
+                    }
+                    else if (!parkingSpots[i].Contains("&") && !parkingSpots[i].StartsWith("c"))
+                    {
+                        // Park second motorcycle if there's only one motorcycle already
+                        Console.WriteLine($"parked in spot {i +1}");
+                        parkingSpots[i] += $" & {vehicleType}:{registrationNumber}";
+                        return true;
+                    }
+                }
             }
-
-            // Park the vehicle
-            parkingSpots[index] = registrationNumber;
-            Console.WriteLine(parkingSpots);
-            return true; // Successfully parked
+            return false; // No available spot
         }
 
-        public bool MoveVehicle(string fromStringSpot, string toStringSpot)
+
+        public bool MoveVehicle(string stringRegNr, string toStringSpot)
         {
-            int fromSpot;
             int toSpot;
-            //convert to int and validate
-            if (!int.TryParse(fromStringSpot, out fromSpot) || fromSpot < 1 || fromSpot > 100)
-            {
-                throw new ArgumentException("Invalid spot number. Enter a number between 1 and 100:");
-            }
+
             if (!int.TryParse(toStringSpot, out toSpot) || toSpot < 1 || toSpot > 100)
             {
                 throw new ArgumentException("Invalid spot number. Enter a number between 1 and 100:");
             }
+
             // Adjust spot numbers to array indices
-            int fromIndex = fromSpot - 1;
+            int fromIndex = FindVehicle(stringRegNr) - 1;
             int toIndex = toSpot - 1;
-            // Check if there is a vehicle in the 'from' spot
-            if (parkingSpots[fromIndex] == null)
+
+            // Check if there is a vehicle with the return value
+            if (fromIndex + 1 == -1)
             {
-                Console.WriteLine($"\nNo vehicle found in spot {fromSpot} to move.\n");
-                return false;
+                throw new ArgumentException("Invalid reg. no.\n");
             }
-            // Check if the spot is empty
             if (parkingSpots[toIndex] != null)
             {
-                Console.WriteLine($"\nSpot {toSpot} is already taken. Cannot move the vehicle.\n");
-                return false;
+                if (parkingSpots[toIndex].Contains("&"))
+                {
+                    throw new ArgumentException("Spot is not available.\n");
+                }else if (parkingSpots[toIndex] != null)
+                {
+                    throw new ArgumentException("Spot is not available.\n");
+                }
             }
-            // Move the vehicle
-            parkingSpots[toIndex] = parkingSpots[fromIndex];
-            parkingSpots[fromIndex] = null; 
+           
 
-            Console.WriteLine($"\nVehicle successfully moved from spot {fromSpot} to spot {toSpot}.\n");
+            if (parkingSpots[fromIndex].Contains("&"))
+            {
+                // Split motorcycles
+                string[] vehicles = parkingSpots[fromIndex].Split('&');
+                // Move the specific motorcycle
+                if (vehicles[0].Contains(stringRegNr))
+                {
+                    parkingSpots[toIndex] = vehicles[0].Trim(); // Move first motorcycle
+                    parkingSpots[fromIndex] = vehicles[1].Trim(); // Keep the second motorcycle
+                }
+                else if (vehicles[1].Contains(stringRegNr))
+                {
+                    parkingSpots[toIndex] = vehicles[1].Trim(); // Move second motorcycle
+                    parkingSpots[fromIndex] = vehicles[0].Trim(); // Keep the first motorcycle
+                }
+                Console.WriteLine($"\nMotorcycle with registration number {stringRegNr} successfully moved to spot {toSpot}.\n");
+            }
+            else
+            {
+                // Move the vehicle (car or single motorcycle)
+                parkingSpots[toIndex] = parkingSpots[fromIndex];
+                parkingSpots[fromIndex] = null;
+                Console.WriteLine($"\nVehicle with registration number {stringRegNr} successfully moved from spot {fromIndex + 1} to spot {toSpot}.\n");
+            }
+
             return true;
-
-
         }
 
-        public bool RemoveVehicle(string spotStringNumber)
+        public bool RemoveVehicle(string specRegNumToRemove)
         {
-            int indexNum;
-            //validate input
-            if (!int.TryParse(spotStringNumber, out indexNum) || indexNum < 1 || indexNum > 100)
+            for (int i = 0; i < parkingSpots.Length; i++)
             {
-                throw new ArgumentException("Invalid spot number. Enter a number between 1 and 100:");
-            }
+                if (parkingSpots[i] != null && parkingSpots[i].Contains(specRegNumToRemove))
+                {
+                    // Handle case when there are two motorcycles in the spot, check for &
+                    if (parkingSpots[i].Contains("&"))
+                    {
+                        // Split it
+                        string[] vehicles = parkingSpots[i].Split('&');
 
-            int adjustedIndex = indexNum - 1;
-            // Check if there is a vehicle in the spot
-            if (parkingSpots[adjustedIndex] == null)
-            {
-                Console.WriteLine($"\nNo vehicle found in spot {adjustedIndex} to remove.\n");
-                return false;
+                        // Find and remove the motorcycle with the matching registration number
+                        if (vehicles[0].Contains(specRegNumToRemove))
+                        {
+                            parkingSpots[i] = vehicles[1].Trim(); // Keep the second motorcycle
+                            Console.WriteLine($"\nMotorcycle with registration number {specRegNumToRemove} removed. Another motorcycle remains in spot {i + 1}.\n");
+                        }
+                        else if (vehicles[1].Contains(specRegNumToRemove))
+                        {
+                            parkingSpots[i] = vehicles[0].Trim(); // Keep the first motorcycle
+                            Console.WriteLine($"\nMotorcycle with registration number {specRegNumToRemove} removed. Another motorcycle remains in spot {i + 1}.\n");
+                        }
+                    }
+                    else
+                    {
+                        // If it's a car or a single motorcycle, remove it
+                        parkingSpots[i] = null;
+                        Console.WriteLine($"\nVehicle with registration number {specRegNumToRemove} removed from spot {i + 1}.\n");
+                    }
+                    return true; // Vehicle found and removed
+                }
             }
-            // Remove the vehicle by setting the spot to null
-            parkingSpots[adjustedIndex] = null;
-            return true;
-
+            Console.WriteLine($"\nNo vehicle found with registration number {specRegNumToRemove}.\n");
+            return false; // Vehicle not found
         }
 
         public int FindVehicle(string searchWord)
         {
-            // Loop through the parking spots to find the vehicle
+            // Loop through the parking spots
             for (int i = 0; i < parkingSpots.Length; i++)
             {
-                if (parkingSpots[i] != null && parkingSpots[i].Equals(searchWord))
+                if (parkingSpots[i] != null)
                 {
-                    // Return the spot number (adjust for user)
-                    return i + 1;
+                    // Split the parked vehicle string to check registration number
+                    string[] vehicles = parkingSpots[i].Split(new[] { ';', '&' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var vehicle in vehicles)
+                    {
+                        string registrationNumber = vehicle.Split(':')[1].Trim(); 
+
+                        if (registrationNumber == searchWord.Trim())
+                        {
+                            // Return the spot number (adjust for user)
+                            return i + 1;
+                        }
+                    }
                 }
             }
-            // Return -1 if the vehicle is not found
+            // Return -1 if not found
             return -1;
+        }
 
+        public void PrintParkingLot()
+        {
+            const int rows = 50; // Number of rows
+            const int cols = 2;  // Number of columns
+            const int spotWidth = 40; // Fixed width for each spot display
+            Console.Clear();
+            Console.WriteLine("\n--- Current Parking Lot ---\n");
+            Console.WriteLine("Spot | Vehicle(s)         | Reg. No.");
+            Console.WriteLine(new string('-', (spotWidth + 1) * cols)); // Line for header
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    int index = row * cols + col;
+                    if (index < parkingSpots.Length)
+                    {
+                        string spotInfo;
+
+                        if (parkingSpots[index] == null)
+                        {
+                            spotInfo = "Empty"; // If spot is empty
+                        }
+                        else
+                        {
+                            string[] vehicles = parkingSpots[index].Split(';');
+                            if (vehicles.Length == 1)
+                            {
+                                spotInfo = parkingSpots[index]; // Single vehicle (car or one motorcycle)
+                            }
+                            else
+                            {
+                                // Format two MC's
+                                spotInfo = $"{vehicles[0]} & {vehicles[1]}";
+                            }
+                        }
+                        Console.Write($"|nr:{index + 1:D3}: {spotInfo,-20} ");
+                    }
+                }
+                Console.WriteLine("|"); 
+                Console.WriteLine(new string('-', (spotWidth + 1) * cols));
+            }
         }
     }
 }
