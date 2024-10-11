@@ -17,7 +17,8 @@
                 Console.WriteLine("2. Move a vehicle");
                 Console.WriteLine("3. Remove a vehicle");
                 Console.WriteLine("4. Search for a vehicle");
-                Console.WriteLine("5. Exit\n");
+                Console.WriteLine("5. Print the parking lot");
+                Console.WriteLine("6. Exit\n");
 
                 string userInput = Console.ReadLine()!;
 
@@ -34,19 +35,16 @@
                             Console.Write("Enter vehicle type, Car / Motorcycle: ");
                             string vehicleType = Console.ReadLine()!;
 
-                            // Get the parking spot number from the user
-                            Console.Write("Enter parking spot number, 1-100: ");
-                            string inputSpotString = Console.ReadLine()!;
-
                             // Park the vehicle using the ParkVehicle method
-                            if (parkingLot.ParkVehicle(registrationNumber, vehicleType.ToLower(), inputSpotString))
+                            if (parkingLot.ParkVehicle(registrationNumber, vehicleType.ToLower()))
                             {
-                                Console.WriteLine($"\nVehicle {registrationNumber} parked successfully in spot {inputSpotString}.\n");
+                                Console.WriteLine($"Vehicle {registrationNumber} parked successfully.\n");
                             }
                             else
                             {
-                                Console.WriteLine($"\nSpot {inputSpotString} is already taken. Please try another spot.\n");
+                                Console.WriteLine($"\nNo available spot for {vehicleType}. Please try another vehicle.\n");
                             }
+
                         }
                         catch (ArgumentException ex)
                         {
@@ -57,18 +55,15 @@
                         try
                         {
                             // Get the source spot from the user
-                            Console.Write("Enter the spot number of the vehicle to move: ");
-                            string fromStringSpot = Console.ReadLine()!;
+                            Console.Write("Enter the registration number of the vehicle to move: ");
+                            string stringRegNr = Console.ReadLine()!;
 
                             // Get the destination spot from the user
                             Console.Write("Enter the destination spot number: ");
                             string toStringSpot = Console.ReadLine()!;
 
                             // Move the vehicle using the MoveVehicle method
-                            if (parkingLot.MoveVehicle(fromStringSpot, toStringSpot))
-                            {
-                                Console.WriteLine($"\nVehicle moved from spot {fromStringSpot} to spot {toStringSpot} successfully.\n");
-                            }
+                            parkingLot.MoveVehicle(stringRegNr, toStringSpot);
                         }
                         catch (ArgumentException ex)
                         {
@@ -79,13 +74,13 @@
                     case "3":
                         try
                         {
-                            Console.Write("\nEnter the spot number of the vehicle to remove: ");
-                            string spotStringNumber = Console.ReadLine()!;
+                            Console.Write("\nEnter the register number of the vehicle to remove: ");
+                            string specRegNumToRemove = Console.ReadLine()!;
 
                             // Remove the vehicle using the RemoveVehicle method
-                            if (parkingLot.RemoveVehicle(spotStringNumber))
+                            if (parkingLot.RemoveVehicle(specRegNumToRemove))
                             {
-                                Console.WriteLine($"\nVehicle removed from spot {spotStringNumber} successfully.\n");
+                                Console.WriteLine($"Deletion successfully.\n");
                             }
                         }
                         catch (ArgumentException ex)
@@ -121,10 +116,12 @@
 
                         break;
                     case "5":
+                        parkingLot.PrintParkingLot();
+                        break;
+                    case "6":
                         running = false;
                         Console.WriteLine("\nShutting down program...");
                         Thread.Sleep(1000);
-
                         break;
                     default:
                         Console.Clear();
